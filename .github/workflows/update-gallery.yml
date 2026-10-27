@@ -1,0 +1,46 @@
+name: Update Gallery JSON
+
+on:
+  push:
+    paths:
+      - 'ramleela-img/oct2026/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate images.json
+        run: |
+          echo "[" > images.json
+          first=true
+
+          for file in ramleela-img/oct2026/*; do
+
+            filename=$(basename "$file")
+
+            if [ "$first" = true ]; then
+              first=false
+            else
+              echo "," >> images.json
+            fi
+
+            echo "\"$filename\"" >> images.json
+
+          done
+
+          echo "]" >> images.json
+
+      - name: Commit JSON
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+
+          git add images.json
+
+          git diff --staged --quiet || git commit -m "Update gallery"
+
+          git push
